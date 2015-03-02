@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+
+        <!-- Deliverables list -->
+        <record id="ikt_deliverable_tree_view" model="ir.ui.view">
+            <field name="name">ikt.deliverable_tree_view</field>
+            <field name="model">ikt.deliverable</field>
+            <field name="priority" eval="10"/>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="parent_id"/>
+                    <field name="name"/>
+                    <field name="sequence"/>
+                    <field name="alt_sequence"/>
+                    <field name="responsible_id"/>
+                </tree>
+            </field>
+        </record>
+
+        <!-- Deliverable form -->
+        <record id="ikt_deliverable_form_view" model="ir.ui.view">
+            <field name="name">ikt.deliverable.form.view</field>
+            <field name="model">ikt.deliverable</field>
+            <field name="priority" eval="15"/>
+            <field name="arch" type="xml">
+                <form version="7.0" string="Deliverables">
+                    <sheet>
+                        <group>
+                            <group colspan="2" col="2">
+                                <field name="responsible_id"/>
+
+                                <h1 colspan="2"><field name="name" default_focus="1" placeholder="Deliverable name"/></h1>
+                            </group>
+                            <group>
+                                <field name="sequence"/>
+                                <field name="alt_sequence"/>
+                                <field name="dummy_text"/>
+                                <field name="parent_id"
+                                       widget="inouktree2one"
+                                       tree_search_mode="server"
+                                       tree_filter_mode="hide"
+                                       tree_expand_nodes="True"
+                                       colspan="2"
+                                       tree_height="200"
+                                       placeholder="Parent Deliverable ; leave blank for project/root deliverable."
+                                       tree_parent_field_name="parent_id"
+                                       tree_children_field_name="sub_deliverable_ids"
+                                       default_focus="1"
+                                       help="A deliverable of type 'view'"/>
+                                <!--
+                                    Neutralized parameters:
+                                        Move them to and from above to test widget behaviour
+
+                                       nolabel="1"
+                                       domain="[('parent_id','=',sequence)]"
+                                       tree_order_by="alt_sequence"
+                                       tree_title_field_name="name"
+                                -->
+                            </group>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <!--
+            "Inouk m3" menu actions
+        -->
+        <record id="action_inouk_tree_deliverables_list" model="ir.actions.act_window">
+            <field name="name">All Deliverables</field>
+            <field name="res_model">ikt.deliverable</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_type">form</field>
+        </record>
+
+    </data>
+</openerp>
+

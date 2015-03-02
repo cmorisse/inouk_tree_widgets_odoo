@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+
+        <menuitem id="itt_menu_root" name="Inouk Tree Test"/>
+
+        <!--
+            "Inouk m3" menu
+        -->
+        <menuitem id="itt_menu"
+                  parent="itt_menu_root"
+                  sequence="10"
+                  name="Inouk Tree Test"/>
+
+            <menuitem id="itt_deliverables"
+                      parent="itt_menu"
+                      sequence="10"
+                      action="action_inouk_tree_deliverables_list" />
+
+    </data>
+</openerp>
+

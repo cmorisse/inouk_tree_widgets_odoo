@@ -1,0 +1,13 @@
+syntax: glob
+
+.installed.cfg
+*.egg-info
+*.swp
+*.pyc
+*.pyo
+*.log
+*\#
+*.\#*
+*~
+.git/
+.gitignore
