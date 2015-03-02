@@ -1,4 +1,7 @@
-openerp.inouk_tree = function(instance, local) {
+/*
+ * WARNING: You must use the same name as the module !
+ */
+openerp.inouk_tree_widgets8 = function(instance, local) {
     var _t = instance.web._t,
         _lt = instance.web._lt;
 
@@ -107,8 +110,8 @@ openerp.inouk_tree = function(instance, local) {
             this.expand_nodes = node.attrs.tree_expand_nodes || false;
             this.is_started = false;
 
-        },
 
+        },
 
         /*
          * TODO: Rework comment with detail
@@ -156,7 +159,10 @@ openerp.inouk_tree = function(instance, local) {
             console.debug("ikt::display_string()");
             var self = this;
             if (!this.get("effective_readonly")) {
-                //this.$input = this.$el.find("input");
+
+                // TODO: understand why display string is called before render editable (compared to many2one) and (re)move this
+                if(!this.$input) this.$input = this.$el.find("input");
+
                 this.$input.val(str.split("\n")[0]);
                 this.current_display = this.$input.val();
                 if (this.is_false()) {
@@ -216,7 +222,8 @@ openerp.inouk_tree = function(instance, local) {
             }
             this.appendTo = appendTo;
 
-            this.$input = this.$el.find("input");
+            // TODO: understand why display string is called before render editable (compared to many2one) and (re)move this
+            if(!this.$input) this.$input = this.$el.find("input");
             this.$inouk_tree = $(this.TREE_ELEMENT_TEMPLATE).appendTo(appendTo);
 
             this.$inouk_tree.fancytree({
@@ -486,6 +493,6 @@ openerp.inouk_tree = function(instance, local) {
 
     });
 
-    instance.web.form.widgets.add('inouktree2one', 'instance.inouk_tree.InoukTree2One');
-    instance.web.client_actions.add('inouk_tree.homepage', 'instance.inouk_tree.HomePage');
+    instance.web.form.widgets.add('inouktree2one', 'instance.inouk_tree_widgets8.InoukTree2One');
+    instance.web.client_actions.add('inouk_tree_widgets8.homepage', 'instance.inouk_tree_widgets8.HomePage');
 };
