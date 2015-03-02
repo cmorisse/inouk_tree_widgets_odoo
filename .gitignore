@@ -11,7 +11,7 @@ env/
 bin/
 build/
 develop-eggs/
-dist/
+# dist/ removed for fancytree compatibility
 eggs/
 py27/lib/
 lib64/
