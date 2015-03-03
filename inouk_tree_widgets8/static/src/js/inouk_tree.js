@@ -161,7 +161,7 @@ openerp.inouk_tree_widgets8 = function(instance, local) {
             if (!this.get("effective_readonly")) {
 
                 // TODO: understand why display string is called before render editable (compared to many2one) and (re)move this
-                if(!this.$input) this.$input = this.$el.find("input");
+                this.$input = this.$el.find("input");
 
                 this.$input.val(str.split("\n")[0]);
                 this.current_display = this.$input.val();
@@ -222,8 +222,7 @@ openerp.inouk_tree_widgets8 = function(instance, local) {
             }
             this.appendTo = appendTo;
 
-            // TODO: understand why display string is called before render editable (compared to many2one) and (re)move this
-            if(!this.$input) this.$input = this.$el.find("input");
+            this.$input = this.$el.find("input");
             this.$inouk_tree = $(this.TREE_ELEMENT_TEMPLATE).appendTo(appendTo);
 
             this.$inouk_tree.fancytree({
