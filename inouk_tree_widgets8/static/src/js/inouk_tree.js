@@ -53,7 +53,7 @@ openerp.inouk_tree_widgets8 = function(instance, local) {
 
         widget_clicked: function(evt) {
             var self = this;
-            openerp.session.rpc('/inouk-tree/nodes', { ka1: 3, ka2: 'coucou' }).then(
+            openerp.session.rpc('/inouk-tree/ping', { ka1: 3, ka2: 'coucou' }).then(
                 function(result) {
                     self.$el.append("<div>result="+result+"</div>");
                     console.log("result="+result);
@@ -492,6 +492,6 @@ openerp.inouk_tree_widgets8 = function(instance, local) {
 
     });
 
-    instance.web.form.widgets.add('inouktree2one', 'instance.inouk_tree_widgets8.InoukTree2One');
+    instance.web.form.widgets.add('inouktree2one',                  'instance.inouk_tree_widgets8.InoukTree2One');
     instance.web.client_actions.add('inouk_tree_widgets8.homepage', 'instance.inouk_tree_widgets8.HomePage');
 };

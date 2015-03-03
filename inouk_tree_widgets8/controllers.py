@@ -6,9 +6,9 @@ import logging
 _logger = logging.getLogger('InoukTree')
 
 class InoukTree(http.Controller):
-    @http.route('/inouk-tree/ping', type='http', auth=None)
+    @http.route('/inouk-tree/ping', type='json', auth='none')
     def pong(self, **kw):
-        return "Pong from InoukTree controller"
+        return "JSON pong from InoukTree controller"
 
 
     def fetch_fancytree_nodes(self, model_name, search_domain, children_field_name, order_by):

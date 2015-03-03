@@ -18,7 +18,7 @@
     <data>
         <record id="action_home_page" model="ir.actions.client">
             <field name="name">Inouk Tree Home</field>
-            <field name="tag">inouk_tree.homepage</field>
+            <field name="tag">inouk_tree_widgets8.homepage</field>
         </record>
     </data>
 
