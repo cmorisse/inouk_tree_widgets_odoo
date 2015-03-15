@@ -30,7 +30,9 @@
                         <img t-att-src='_s + "/web/static/src/img/down-arrow.png"' draggable="false"/>
                     </span>
                     <!-- TODO: add styles below to a custom css -->
-                    <div style="position:relative;z-index:9;visibility:hidden" class="inouk_tree_container"></div>
+                    <div style="position:relative;z-index:9;visibility:hidden"
+                         t-att-tabindex="widget.node.attrs.tabindex"
+                         class="ikt2o-container"></div>
 
                 </div>
             </t>

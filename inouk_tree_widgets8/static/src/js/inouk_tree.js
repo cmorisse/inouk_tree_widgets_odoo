@@ -69,33 +69,41 @@ openerp.inouk_tree_widgets8 = function(instance, local) {
      * My First component
      *
      * TODO: Document component parameters/attributes
+     *
      */
+    // TODO: CSS use same font as char
+
     local.InoukTree2One = instance.web.form.AbstractField.extend(instance.web.form.ReinitializeFieldMixin, {
         template: "InoukTree2One",
 
-        TREE_ELEMENT_TEMPLATE: '<div style="position:relative;z-index:9;" class="inouk_tree_container"></div>',
-        TREE_VIEW_DEFAULT_HEIGHT: 100,                  // pixels
-        TREE_VIEW_DEFAULT_FILTER_LEAVES_ONLY: false,    // search on all nodes
-        TREE_VIEW_DEFAULT_FILTER_MODE: 'dimm',          // 'dimm' | 'hide'
+        TREE_ELEMENT_TEMPLATE:          '<div class="ikt2o-container" style="position:relative;z-index:9;"></div>',
+        TREE_TOGGLE_SHORTCUT_KEYCODE:   115,      // F4
+
+        TREE_DEFAULT_HEIGHT:            200,      // pixels
+        TREE_DEFAULT_FILTER_LEAVES_ONLY:false,    // search on all nodes
+        TREE_DEFAULT_FILTER_MODE:       'dimm',   // 'dimm' | 'hide'
+        TREE_DEFAULT_TITLE_COMPONENTS_SEPARATOR: " ➥ ", // Used to split name and extract node name
+
         events: {
             'keyup input': function (evt) {
+                console.debug("ikt:keyup input event")
                 self = this;
                 if (self.$inouk_tree.is(":visible")) {
                     var filterString = self.$input.val(),
                         tree = self.$inouk_tree.fancytree('getTree');
-                    n = tree.filterNodes(filterString, self.TREE_VIEW_DEFAULT_FILTER_LEAVES_ONLY);
+                    n = tree.filterNodes(filterString, self.TREE_DEFAULT_FILTER_LEAVES_ONLY);
                 }
             }
         },
 
-
         init: function(field_manager, node) {
-            console.log("ik:init()");
+            console.debug("ik:init()");
             this._super.apply(this, arguments);
 
             // this.value : contains the effective value of the field: an id
             this.display_value = "";  // label associated to this.value id
             this.current_display = null;
+            this.is_started = false;
 
             /*
              * process tag parameter
@@ -105,32 +113,33 @@ openerp.inouk_tree_widgets8 = function(instance, local) {
             this.order_by = node.attrs.tree_order_by;
             this.children_field_name = node.attrs.tree_children_field_name;
             this.title_field_name = node.attrs.tree_title_field_name;
-            this.tree_height = node.attrs.tree_height || this.TREE_VIEW_DEFAULT_HEIGHT;  // in pixels
+            this.tree_height = node.attrs.tree_height || this.TREE_DEFAULT_HEIGHT;  // in pixels
             this.filter_mode = node.attrs.tree_filter_mode || '' in ['dimm', 'hide'] ? node.attrs.tree_filter_mode : 'hide';
             this.expand_nodes = node.attrs.tree_expand_nodes || false;
-            this.is_started = false;
-
+            this.tree_title_components_separator = node.attrs.tree_title_components_separator || this.TREE_DEFAULT_TITLE_COMPONENTS_SEPARATOR;
 
         },
 
         /*
-         * TODO: Rework comment with detail
-         * Only (ugly) solution to hide tree when it loose focus tree
+         * Only (ugly) solution to hide tree when it loose focus.
+         *  When user click outside tree and if tree is visible we hide it
          */
         initialize_field: function() {
             this.is_started = true;
+
             instance.web.bus.on('click', this, function (evt) {
                 if (!this.get("effective_readonly") && this.$input && this.$inouk_tree.is(':visible')) {
                     this.$inouk_tree.hide();
                 }
             });
+
             instance.web.form.ReinitializeFieldMixin.initialize_field.call(this);
         },
 
         /*
          * render_value()
          *  called each time value is modified to redisplay it.
-         *  We override it to handle value / display_value duality
+         *  Overriden to handle value / display_value duality
          */
         render_value: function() {
             var self = this;
@@ -139,7 +148,7 @@ openerp.inouk_tree_widgets8 = function(instance, local) {
             console.debug("  ikt:render_value() this.get('value') = "+this.get('value'));
             console.debug("  ikt:render_value() this.display_value = "+this.display_value);
 
-            if (! this.get("value")) {
+            if (!this.get("value")) {
                 this.display_string("");
                 return;
             }
@@ -148,7 +157,6 @@ openerp.inouk_tree_widgets8 = function(instance, local) {
                 //return;
             }
         },
-
 
         /*
          * display_string(str)
@@ -163,7 +171,10 @@ openerp.inouk_tree_widgets8 = function(instance, local) {
                 // TODO: understand why display string is called before render editable (compared to many2one) and (re)move this
                 this.$input = this.$el.find("input");
 
-                this.$input.val(str.split("\n")[0]);
+                var nodeTitle = (str.split("\n")[0]).split(self.tree_title_components_separator);
+                nodeTitle = nodeTitle[nodeTitle.length - 1];
+
+                this.$input.val(nodeTitle);
                 this.current_display = this.$input.val();
                 if (this.is_false()) {
                     this.$('.oe_m2o_cm_button').css({'display':'none'});
@@ -228,26 +239,46 @@ openerp.inouk_tree_widgets8 = function(instance, local) {
             this.$inouk_tree.fancytree({
                 extensions: ["filter"],
                 quicksearch: true,
+                autoActivate: false,    // We do not want nodes to be activated by a keystroke
+                //focusOnSelect: true,    //
                 filter: {
                     mode: self.filter_mode,
                     autoApply: true
                 },
                 activate: function (event, data) {
+                    console.debug("ikt::fancytree::activate() => set_value(", data.node.key, ", ",data.node.title, ");");
                     var value = [data.node.key, data.node.title];
                     self.set_value(value);
                     self.$inouk_tree.hide();
                     event.stopPropagation();
-                    console.debug("ikt::fancytree::activate() => set_value(" + value + ");");
+                    self.$input.focus();
                 },
 
                 /*
                  * click
-                 * We prevent propagation since we use click outside tree to close it
+                 * We prevent click propagation since we use this event outside
+                 * the tree to close it.
+                 *    see initialize_field() above
                  */
                 click: function(evt, data) {
-                    self.$input.focus();
                     evt.stopPropagation();
                     return true
+                },
+
+                /*
+                 * On F4 and ESCAPE we close the tree and get back to the input field
+                 */
+                keydown: function(evt, data) {
+                    if(evt.which==self.TREE_TOGGLE_SHORTCUT_KEYCODE || evt.which== $.ui.keyCode.ESCAPE) {
+                        self.$inouk_tree.hide();
+                        self.$input.focus();
+                        return false;   // We don't want the key to be processed by input in case
+                                        // TREE_TOGGLE_SHORTCUT_KEYCODE code is a normal key with modifier.
+                    } else if(evt.which==$.ui.keyCode.TAB) {
+                        // Prevent tab from exiting the treeview
+                        return false;
+                    }
+                    return true; // Let fancytree process the event
                 },
 
                 /*
@@ -286,10 +317,6 @@ openerp.inouk_tree_widgets8 = function(instance, local) {
                         }
                     )
                 }
-                /*
-                 * filter: => tree.filterNodes(match, leavesOnly);
-                 * A ajouter dans keyup ou keydown
-                 */
             })
                 .detach()
                 .appendTo(appendTo)
@@ -299,16 +326,21 @@ openerp.inouk_tree_widgets8 = function(instance, local) {
                 //.css('visibility', 'visible');
 
             // height must be defined directly on the fancy tree ul element
-            this.$fancytree = this.$inouk_tree.find('ul.fancytree-container'); //.height(this.height);
+            this.$fancytree = this.$inouk_tree.find('ul.fancytree-container');
             this.$fancytree.height(this.tree_height);
 
-            this.$drop_down = this.$el.find(".oe_m2o_drop_down_button");
-            this.$drop_down.click(function(evt) {
+            /*
+             * Setup dropdown button behaviour
+             */
+            // TODO: Rework method name and refactor to reuse component
+            var open_tree_event_handler = function(evt) {
+                // TODO: Should'nt this be invoked in caller ???
                 evt.stopPropagation();  // We must prevent bubbling on main
 
-                self.$input.focus();
                 if (self.$inouk_tree.is(":visible")) {
                     self.$inouk_tree.hide();
+                    self.$input.focus();
+                    return
                 } else {
                     /*
                      * We must reload tree content.
@@ -318,26 +350,26 @@ openerp.inouk_tree_widgets8 = function(instance, local) {
                      * initialize the tree.
                      * TODO: remove duplicated source definition when fixed in fancytree
                      * TODO: implement current value value selection in tree
-                    if (self.get("value") && ! self.floating) {
-                        self.$input.autocomplete("search", "");
-                    } else {
-                        self.$input.autocomplete("search");
-                    }
+                     if (self.get("value") && ! self.floating) {
+                     self.$input.autocomplete("search", "");
+                     } else {
+                     self.$input.autocomplete("search");
+                     }
                      */
                     console.debug("  ikt:reload_tree()");
                     self.$inouk_tree.fancytree('getTree').reload(
                         openerp.session.rpc('/inouk-tree/tree',
-                                            {
-                                                search_mode: self.search_mode,
-                                                model_name: self.field.relation,
-                                                title_field_name: self.title_field_name,
-                                                parent_field_name: self.parent_field_name,
-                                                children_field_name: self.children_field_name,
-                                                domain: self.build_domain().eval() || [],
-                                                expand_nodes: self.expand_nodes,
-                                                order_by: self.order_by,
-                                                parent_id: null
-                                            })
+                            {
+                                search_mode: self.search_mode,
+                                model_name: self.field.relation,
+                                title_field_name: self.title_field_name,
+                                parent_field_name: self.parent_field_name,
+                                children_field_name: self.children_field_name,
+                                domain: self.build_domain().eval() || [],
+                                expand_nodes: self.expand_nodes,
+                                order_by: self.order_by,
+                                parent_id: null
+                            })
                     );
 
                     /*
@@ -345,22 +377,26 @@ openerp.inouk_tree_widgets8 = function(instance, local) {
                      * TODO: Which option below is better ?
                      */
                     /* Option 1
-                    self.$inouk_tree.css('visibility', 'hidden');
-                    self.$inouk_tree.show();  // We must show it before repositioning
-                    self.$inouk_tree.position({ my: "left top", at: "left bottom", of: self.$el});
-                    self.$inouk_tree.css('visibility', 'visible');
-                    */
+                     self.$inouk_tree.css('visibility', 'hidden');
+                     self.$inouk_tree.show();  // We must show it before repositioning
+                     self.$inouk_tree.position({ my: "left top", at: "left bottom", of: self.$el});
+                     self.$inouk_tree.css('visibility', 'visible');
+                     */
                     /* Option 2 : flickering ? */
                     self.$inouk_tree.show();  // We must show it before repositioning
                     self.$inouk_tree.position({ my: "left top", at: "left bottom", of: self.$el});
                 }
-            });
+            };
+
+            this.$drop_down = this.$el.find(".oe_m2o_drop_down_button");
+            this.$drop_down.click(open_tree_event_handler);
 
 
-            var input_change_handler = function() {
-                console.log("ikt::input_keydown_handler()");
-                console.log("ikt::input_keydown_handler  self.$input.val() =", self.$input.val());
-                console.log("ikt::input_keydown_handler  self.current_display =", self.current_display);
+            var input_change_handler = function(evt) {
+                console.log("ikt::input_change_handler()");
+                console.log("ikt::input_change_handler  self.$input.val() = ", self.$input.val());
+                console.log("ikt::input_change_handler  self.current_display = ", self.current_display);
+                console.log("ikt::input_change_handler  keyup evt.which = ", evt.which);
 
                 // Did user modify input field content ?
                 if (self.current_display !== self.$input.val()) {
@@ -401,9 +437,33 @@ openerp.inouk_tree_widgets8 = function(instance, local) {
 
             this.$input.change(input_change_handler);
             this.$input.keyup(input_change_handler);
-            // TODO: fancytree must autoselect current value on open ?
-            // TODO: CSS remove blue line,
-            // TODO: CSS use same font as char
+
+            /**
+             * event: keydown
+             *
+             */
+            this.$input.keydown(function(evt){
+                console.debug("keydown evt.which=",evt.which," evt.ctrlKey=",evt.ctrlKey);
+                if(evt.which==self.TREE_TOGGLE_SHORTCUT_KEYCODE) {
+                    /*
+                     * User press TREE_TOGGLE_SHORTCUT_KEYCODE
+                     *   if tree is  visible : we focus on it
+                     *           not visible : we show it but don't focus it
+                     */
+                    if(self.$inouk_tree.is(":visible")) {
+                        evt.stopPropagation();  // We don't want TREE_TOGGLE_SHORTCUT_KEYCODE to be processed by input
+                        self.$fancytree.focus();
+                    } else {
+                        open_tree_event_handler(evt)
+                    }
+                } else if(evt.which== $.ui.keyCode.TAB) {
+                    /*
+                     * User press TAB, we hide the tree and let std behavior happens
+                     */
+                    if (self.$inouk_tree.is(":visible"))
+                        self.$inouk_tree.hide();
+                }
+            })
         },
 
         /*
@@ -421,8 +481,6 @@ openerp.inouk_tree_widgets8 = function(instance, local) {
             this.reinit_value(value_);
         },
 
-
-
         reinit_value: function(val) {
             console.debug("ikt::reinit_value("+ val +")");
             this.internal_set_value(val);
@@ -431,9 +489,11 @@ openerp.inouk_tree_widgets8 = function(instance, local) {
                 this.render_value();
         },
 
-
-
-        // TODO manage height of the tree using a tree_height attribute
+        /*
+         * set_dimensions()
+         *   Handle INPUT height modification (this code comes from Many2OneWidget)
+         *   Note that Tree view height is defined using the tree_height field's attribute.
+         */
         set_dimensions: function (height, width) {
             this._super(height, width);
             if (!this.get("effective_readonly") && this.$input)
@@ -442,9 +502,9 @@ openerp.inouk_tree_widgets8 = function(instance, local) {
 
         /*
          * destroy()
-         *  called when the view is destroyed to destroy what has been created by
-         *  this widget.
-         *  In our case we rely on destroy_content from ReinitializeFieldMixin below
+         *   called when the view is destroyed to destroy what has been created by
+         *   this widget.
+         *   In our case we rely on destroy_content from ReinitializeFieldMixin below
          */
         destroy: function () {
             console.debug("ikt::destroy()");
@@ -464,7 +524,7 @@ openerp.inouk_tree_widgets8 = function(instance, local) {
 
         /*
          * initialize_content()
-         *  Called by Client to initialize content
+         *   Called by Client to initialize content
          */
         initialize_content: function() {
             console.debug("ikt::initialize_content()");
@@ -476,15 +536,14 @@ openerp.inouk_tree_widgets8 = function(instance, local) {
 
         /*
          * destroy_content()
-         *  Must destroy what have been
+         *   Must destroy what have been
          */
         destroy_content: function() {
             console.debug("ikt::destroy_content()");
             // TODO: destroy what has been created by this widget from initialize content
             if(this.$inouk_tree) {
-                var fancyTree = this.$inouk_tree.find('ul.fancytree-container');
-                fancyTree.remove();
-                delete fancyTree;
+                this.$inouk_tree.remove();
+                delete this.$inouk_tree;
 
             }
         }
