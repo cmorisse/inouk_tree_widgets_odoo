@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+        <template id="assets_backend" name="inouk_tree assets" inherit_id="web.assets_backend">
+            <xpath expr="." position="inside">
+                <!-- Fancytree -->
+                <link rel="stylesheet"        href="/inouk_tree_widgets/static/lib/fancytree-2.8.1/dist/skin-win8/ui.fancytree.css"/>
+                <script type="text/javascript" src="/inouk_tree_widgets/static/lib/fancytree-2.8.1/dist/jquery.fancytree.js"></script>
+                <script type="text/javascript" src="/inouk_tree_widgets/static/lib/fancytree-2.8.1/dist/src/jquery.fancytree.filter.js"></script>
+                <!-- inouktree -->
+                <script type="text/javascript" src="/inouk_tree_widgets/static/src/js/inouk_tree.js"></script>
+            </xpath>
+        </template>
+    </data>
+</openerp>

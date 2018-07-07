@@ -1,7 +1,7 @@
 /*
  * WARNING: You must use the same name as the module !
  */
-openerp.inouk_tree_widgets8 = function(instance, local) {
+openerp.inouk_tree_widgets = function(instance, local) {
     var _t = instance.web._t,
         _lt = instance.web._lt;
 
@@ -551,6 +551,6 @@ openerp.inouk_tree_widgets8 = function(instance, local) {
 
     });
 
-    instance.web.form.widgets.add('inouktree2one',                  'instance.inouk_tree_widgets8.InoukTree2One');
-    instance.web.client_actions.add('inouk_tree_widgets8.homepage', 'instance.inouk_tree_widgets8.HomePage');
+    instance.web.form.widgets.add('inouktree2one',                  'instance.inouk_tree_widgets.InoukTree2One');
+    instance.web.client_actions.add('inouk_tree_widgets.homepage', 'instance.inouk_tree_widgets.HomePage');
 };
